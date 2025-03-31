@@ -1,13 +1,14 @@
 import requests
 from bs4 import BeautifulSoup
 
+all_jobs = []
 def scrape_page(url):
+    print(f'scraping {url}...')
     response = requests.get(url)
     soup  = BeautifulSoup(response.content, "html.parser")
 
     jobs = soup.find("section", class_="jobs").find_all("li")[:-1]
 
-    all_jobs = []
     for job in jobs:
         title = job.find("h4", class_="new-listing__header__title").text
         region = job.find("p", class_="new-listing__company-headquarters")
@@ -38,12 +39,20 @@ def scrape_page(url):
              "url": url
         }
         all_jobs.append(job_data)
-    print(all_jobs)
-   
 
- 
+def get_pages(url):
+    response = requests.get(url)
+    soup = BeautifulSoup(response.content, "html.parser")
+    buttons = len(soup.find("span", class_="pages-container with_next_last").find_all("span", class_="page"))
+    
+    return buttons
+
+total_pages = get_pages("https://weworkremotely.com/remote-full-time-jobs?page=1")
+for page in range(1,total_pages+1):
+    url = f"https://weworkremotely.com/remote-full-time-jobs?page={page}"
+    
+    scrape_page(url)
+print(len(all_jobs))
 
   
 
-url = "https://weworkremotely.com/categories/remote-full-stack-programming-jobs#job-listings"
-scrape_page(url)  
